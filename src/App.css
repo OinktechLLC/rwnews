@@ -260,6 +260,52 @@ body {
   margin-bottom: 2rem;
 }
 
+.article-view .article-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+  margin: 1rem 0;
+}
+
+.article-view .article-body a {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+.article-view .article-body p {
+  margin-bottom: 1rem;
+}
+
+.article-view .article-body ul,
+.article-view .article-body ol {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.article-view .article-body code {
+  background: var(--background);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.article-view .article-body pre {
+  background: var(--background);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.article-view .article-body blockquote {
+  border-left: 4px solid var(--primary-color);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
 .article-actions {
   border-top: 1px solid var(--border-color);
   padding-top: 1.5rem;
