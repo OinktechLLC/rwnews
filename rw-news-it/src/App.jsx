@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { parseRSS, extractTopics, getRecommendations, saveUserPreferences, getUserPreferences, checkCookies, acceptCookies, declineCookies } from './utils.js';
+import { extractTopics, getRecommendations, saveUserPreferences, getUserPreferences, checkCookies, acceptCookies, declineCookies } from './utils.js';
 import CookieBanner from './CookieBanner.jsx';
+import './App.css';
 
 const RSS_URL = 'https://resource-world.ru/forums/-/index.rss';
 
