@@ -5,7 +5,7 @@ const RSS_URL = 'https://resource-world.ru/forums/-/index.rss'
 export const parseRSS = async () => {
   try {
     // Используем CORS прокси для обхода ограничений браузера
-    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(RSS_URL)
+    const proxyUrl = 'https://secure-272717.tatnet.app/' + encodeURIComponent(RSS_URL)
     const response = await fetch(proxyUrl)
     if (!response.ok) throw new Error('Network response was not ok')
     const text = await response.text()
