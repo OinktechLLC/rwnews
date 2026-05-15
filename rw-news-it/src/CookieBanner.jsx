@@ -1,24 +1,35 @@
-import React from 'react';
+import { useState, useEffect } from 'react'
 
-export default function CookieBanner({ show, onAccept, onDecline }) {
-    if (!show) return null;
+const CookieBanner = ({ onAccept }) => {
+  const [isVisible, setIsVisible] = useState(false)
 
-    return (
-        <div className="cookie-banner show">
-            <p>
-                🍪 Мы используем файлы cookie для улучшения работы приложения, 
-                персонализации контента и анализа использования. 
-                Продолжая использовать приложение, вы соглашаетесь с нашей 
-                <a href="#privacy" style={{ color: 'var(--primary-color)', marginLeft: '5px' }}>Политикой конфиденциальности</a>.
-            </p>
-            <div className="cookie-buttons">
-                <button className="accept-cookies" onClick={onAccept}>
-                    Принять
-                </button>
-                <button className="decline-cookies" onClick={onDecline}>
-                    Отклонить
-                </button>
-            </div>
-        </div>
-    );
+  useEffect(() => {
+    const accepted = localStorage.getItem('rw_cookies_accepted')
+    if (!accepted) {
+      setTimeout(() => setIsVisible(true), 1000)
+    }
+  }, [])
+
+  const handleAccept = () => {
+    localStorage.setItem('rw_cookies_accepted', 'true')
+    setIsVisible(false)
+    onAccept()
+  }
+
+  if (!isVisible) return null
+
+  return (
+    <div className="cookie-banner">
+      <div className="cookie-content">
+        <p>
+          🍪 Мы используем cookie для улучшения работы сайта и персонализации рекомендаций.
+          Продолжая использовать сайт, вы соглашаетесь с нашей 
+          <a href="#privacy" onClick={(e) => { e.preventDefault(); window.location.hash = 'privacy' }}>политикой конфиденциальности</a>.
+        </p>
+        <button onClick={handleAccept} className="accept-btn">Принять</button>
+      </div>
+    </div>
+  )
 }
+
+export default CookieBanner
