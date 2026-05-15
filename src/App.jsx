@@ -94,7 +94,7 @@ function App() {
             </ul>
             <h3>API:</h3>
             <p>RSS: https://resource-world.ru/forums/-/index.rss</p>
-            <p>CORS Proxy: https://api.allorigins.win/raw?url=</p>
+            <p>CORS Proxy: Автоматический выбор из 15 прокси (AllOrigins, CorsProxy.io, ThingProxy и др.)</p>
             <h3>Структура проекта:</h3>
             <pre>
 {`rw-news-it/
