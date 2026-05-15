@@ -101,11 +101,11 @@ function App() {
             <ul>
               <li>React 18 + Vite</li>
               <li>CSS Variables для темизации</li>
-              <li>DOMParser для парсинга XML</li>
+              <li>RSS2JSON API для парсинга RSS</li>
             </ul>
             <h3>API:</h3>
             <p>RSS: https://resource-world.ru/forums/-/index.rss</p>
-            <p>CORS Proxy: Автоматический выбор из 15 прокси (AllOrigins, CorsProxy.io, ThingProxy и др.)</p>
+            <p>RSS to JSON: https://rss2json.com/</p>
             <h3>Структура проекта:</h3>
             <pre>
 {`rw-news-it/
@@ -221,9 +221,7 @@ function App() {
               <span className="date">{new Date(selectedArticle.pubDate).toLocaleString('ru-RU')}</span>
               {selectedArticle.category && <span className="category">{selectedArticle.category}</span>}
             </p>
-            <div className="article-body">
-              <p>{selectedArticle.description}</p>
-            </div>
+            <div className="article-body" dangerouslySetInnerHTML={{ __html: selectedArticle.content || selectedArticle.description }} />
             <div className="article-actions">
               <a 
                 href={selectedArticle.link} 

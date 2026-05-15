@@ -1,111 +1,73 @@
 const RSS_URL = 'https://resource-world.ru/forums/-/index.rss'
-
-// Список CORS прокси - только проверенные рабочие
-const PROXY_LIST = [
-  // ВсеОриджины (самый надежный)
-  (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  // КорсХэвэн
-  (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  // КодЭвридей (thingproxy)
-  (url) => `https://thingproxy.freeboard.io/fetch/${url}`,
-  // КорсШип
-  (url) => `https://cors.sh/${url}`,
-  // ПиксельПинг
-  (url) => `https://proxy.pixelping.ru/${encodeURIComponent(url)}`,
-  // ИсОнЦФГ (isomorphic-git)
-  (url) => `https://cdn.jsdelivr.net/gh/isomorphic-git/cors-proxy@master/proxy?url=${encodeURIComponent(url)}`,
-]
+const RSS2JSON_API = 'https://api.rss2json.com/api.json'
 
 export const parseRSS = async () => {
-  let lastError = null
-  
-  // Перебираем прокси по очереди
-  for (let i = 0; i < PROXY_LIST.length; i++) {
-    try {
-      const proxyUrl = PROXY_LIST[i](RSS_URL)
-      console.log(`Trying proxy ${i + 1}/${PROXY_LIST.length}: ${proxyUrl}`)
-      
-      // Таймаут 10 секунд для каждого прокси
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000)
-      
-      const response = await fetch(proxyUrl, { 
-        signal: controller.signal,
-        headers: {
-          'Accept': 'application/xml, text/xml',
-          'Origin': '*',
-        },
-        mode: 'cors',
-      })
-      
-      clearTimeout(timeoutId)
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
-      
-      const text = await response.text()
-      
-      // Проверяем что ответ похож на XML
-      if (!text.includes('<rss') && !text.includes('<?xml') && !text.includes('<feed')) {
-        throw new Error('Invalid XML response')
-      }
-      
-      const parser = new DOMParser()
-      const xml = parser.parseFromString(text, 'text/xml')
-      
-      // Проверяем на ошибки парсинга
-      const parseError = xml.querySelector('parsererror')
-      if (parseError) {
-        throw new Error('XML parsing error')
-      }
-      
-      const items = Array.from(xml.querySelectorAll('item')).map(item => {
-        const title = item.querySelector('title')?.textContent || ''
-        const link = item.querySelector('link')?.textContent || ''
-        const description = item.querySelector('description')?.textContent || ''
-        const pubDate = item.querySelector('pubDate')?.textContent || ''
-        const category = item.querySelector('category')?.textContent || ''
-        
-        // Фильтруем только статьи (исключаем ресурсы по ключевым словам)
-        const isArticle = !title.toLowerCase().includes('файл') && 
-                         !title.toLowerCase().includes('resource') &&
-                         !title.toLowerCase().includes('скачать') &&
-                         description.length > 50
-        
-        return {
-          id: Math.random().toString(36).substr(2, 9),
-          title,
-          link,
-          description: stripHtml(description),
-          pubDate,
-          category,
-          isArticle
-        }
-      })
-      
-      console.log(`✓ Successfully loaded ${items.length} items with proxy ${i + 1}`)
-      
-      // Возвращаем только статьи
-      const filtered = items.filter(item => item.isArticle)
-      if (filtered.length > 0) {
-        return filtered
-      } else if (items.length > 0) {
-        // RSS загрузился, но нет статей (только файлы/ресурсы)
-        throw new Error('В RSS-ленте нет новых статей')
-      }
-      
-    } catch (proxyError) {
-      console.warn(`✗ Proxy ${i + 1} failed:`, proxyError.message)
-      lastError = proxyError
-      // Продолжаем пробовать следующий прокси
-      continue
+  try {
+    console.log(`Loading RSS via rss2json.com: ${RSS_URL}`)
+    
+    // Таймаут 15 секунд
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000)
+    
+    const response = await fetch(`${RSS2JSON_API}?rss_url=${encodeURIComponent(RSS_URL)}&count=100`, { 
+      signal: controller.signal,
+    })
+    
+    clearTimeout(timeoutId)
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
     }
+    
+    const data = await response.json()
+    
+    if (data.status !== 'ok') {
+      throw new Error(data.message || 'API error')
+    }
+    
+    const items = data.items.map(item => {
+      const title = item.title || ''
+      const link = item.link || ''
+      const description = item.description || item.content || ''
+      const pubDate = item.pubDate || item.date || ''
+      const category = item.categories?.[0] || ''
+      const content = item.content || item.description || ''
+      
+      // Фильтруем только статьи (исключаем ресурсы по ключевым словам)
+      const isArticle = !title.toLowerCase().includes('файл') && 
+                       !title.toLowerCase().includes('resource') &&
+                       !title.toLowerCase().includes('скачать') &&
+                       description.length > 50
+      
+      return {
+        id: item.guid || Math.random().toString(36).substr(2, 9),
+        title,
+        link,
+        description: stripHtml(description),
+        content: content, // Полный контент статьи
+        pubDate,
+        category,
+        isArticle
+      }
+    })
+    
+    console.log(`✓ Successfully loaded ${items.length} items via rss2json`)
+    
+    // Возвращаем только статьи
+    const filtered = items.filter(item => item.isArticle)
+    if (filtered.length > 0) {
+      return filtered
+    } else if (items.length > 0) {
+      // RSS загрузился, но нет статей (только файлы/ресурсы)
+      throw new Error('В RSS-ленте нет новых статей')
+    }
+    
+    return []
+    
+  } catch (error) {
+    console.error('❌ rss2json failed:', error.message)
+    throw new Error(`Не удалось загрузить новости: ${error.message}. Проверьте подключение к интернету.`)
   }
-  
-  // Если все прокси не сработали
-  console.error('❌ All proxies failed:', lastError)
-  throw new Error(`Все прокси не работают. Последняя ошибка: ${lastError?.message || 'Неизвестная ошибка'}. Проверьте подключение к интернету.`)
 }
 
 const stripHtml = (html) => {
