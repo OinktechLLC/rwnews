@@ -349,6 +349,45 @@ pre {
   font-size: 1.1rem;
 }
 
+/* Error Message */
+.error-message {
+  text-align: center;
+  padding: 3rem;
+  background: #fef3c7;
+  border: 1px solid var(--warning-color);
+  border-radius: var(--radius);
+  margin: 2rem 0;
+}
+
+.error-message p {
+  color: #92400e;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.no-articles {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.retry-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+  margin-top: 1rem;
+}
+
+.retry-btn:hover {
+  background: var(--primary-hover);
+}
+
 /* Footer */
 .footer {
   background: var(--card-background);
