@@ -5,6 +5,7 @@ import CookieBanner from './CookieBanner'
 function App() {
   const [articles, setArticles] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [selectedArticle, setSelectedArticle] = useState(null)
   const [currentPage, setCurrentPage] = useState('home')
   const [preferences, setPreferences] = useState([])
@@ -17,9 +18,19 @@ function App() {
 
   const loadArticles = async () => {
     setLoading(true)
-    const data = await parseRSS()
-    setArticles(data)
-    setLoading(false)
+    setError(null)
+    try {
+      const data = await parseRSS()
+      if (data && data.length > 0) {
+        setArticles(data)
+      } else {
+        setError('Не удалось загрузить новости. Проверьте подключение к интернету или попробуйте позже.')
+      }
+    } catch (err) {
+      setError(err.message || 'Произошла ошибка при загрузке новостей')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleAddPreference = () => {
@@ -159,6 +170,16 @@ function App() {
               <h2>📰 Все новости</h2>
               {loading ? (
                 <div className="loading">Загрузка новостей...</div>
+              ) : error ? (
+                <div className="error-message">
+                  <p>⚠️ {error}</p>
+                  <button onClick={loadArticles} className="retry-btn">Попробовать снова</button>
+                </div>
+              ) : articles.length === 0 ? (
+                <div className="no-articles">
+                  <p>Новости не найдены</p>
+                  <button onClick={loadArticles} className="retry-btn">Обновить</button>
+                </div>
               ) : (
                 <div className="articles-grid">
                   {articles.map(article => (
